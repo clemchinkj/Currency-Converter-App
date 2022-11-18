@@ -1,0 +1,38 @@
+<resources>
+    <string name="app_name">Mini Currency Converter</string>
+    <string name="retrieving_rate">Retrieving rate</string>
+    <string-array name="currency_codes">
+        <item>SGD</item>
+        <item>MYR</item>
+        <item>JPY</item>
+        <item>USD</item>
+        <item>EUR</item>
+        <item>AUD</item>
+        <item>HKD</item>
+        <item>CNY</item>
+        <item>GBP</item>
+        <item>ISK</item>
+        <item>CAD</item>
+        <item>IDR</item>
+        <item>PHP</item>
+        <item>DKK</item>
+        <item>HUF</item>
+        <item>CZK</item>
+        <item>INR</item>
+        <item>RON</item>
+        <item>SEK</item>
+        <item>BRL</item>
+        <item>RUB</item>
+        <item>HRK</item>
+        <item>THB</item>
+        <item>CHF</item>
+        <item>PLN</item>
+        <item>BGN</item>
+        <item>NOK</item>
+        <item>NZD</item>
+        <item>ZAR</item>
+        <item>MXN</item>
+        <item>ILS</item>
+        <item>KRW</item>
+    </string-array>
+</resources>
