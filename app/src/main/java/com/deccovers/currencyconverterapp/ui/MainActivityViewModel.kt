@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.deccovers.currencyconverterapp.data.ExchangeRepository
+import com.deccovers.currencyconverterapp.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -18,16 +19,17 @@ private const val TAG = "MainActivityViewModel"
 @HiltViewModel
 class MainActivityViewModel @Inject constructor(
     private val exchangeRepository: ExchangeRepository
-): ViewModel() {
+) : ViewModel() {
 
     // StateFlow
     private val _exchangeUiState = MutableStateFlow<ExchangeUiState>(ExchangeUiState.Empty)
     val exchangeUiState: StateFlow<ExchangeUiState> = _exchangeUiState
+
     sealed class ExchangeUiState {
-        object Success: ExchangeUiState()
-        data class Error(val message: String): ExchangeUiState()
-        object Loading: ExchangeUiState()
-        object Empty: ExchangeUiState()
+        object Success : ExchangeUiState()
+        data class Error(val message: String) : ExchangeUiState()
+        object Loading : ExchangeUiState()
+        object Empty : ExchangeUiState()
     }
 
     private var exchangeRate = 1.0
@@ -48,20 +50,26 @@ class MainActivityViewModel @Inject constructor(
                 _exchangeUiState.value = ExchangeUiState.Success
                 Log.d(TAG, "Currency input = output, rate = $exchangeRate")
             } else {
-                exchangeRate = exchangeRepository.getExchangeRate(currencyInput, currencyOutput)
-                _exchangeUiState.value = ExchangeUiState.Success
-                Log.d(TAG, "Exchange rate retrieved: $exchangeRate")
+                when(val exchangeRateResponse = exchangeRepository.getExchangeRate(currencyInput, currencyOutput)) {
+                    is Resource.Success -> {
+                        exchangeRate = exchangeRateResponse.data!!
+                        _exchangeUiState.value = ExchangeUiState.Success
+                        Log.d(TAG, "Exchange rate retrieved: $exchangeRate")
+                    }
+                    is Resource.Failure -> {
+                        // Switch UI back to previous stable value
+                        delay(300L)
+                        _exchangeUiState.value = ExchangeUiState.Error(exchangeRateResponse.message!!)
+                        Log.e(TAG, "Network Resource Failure: ${exchangeRateResponse.message}")
+                    }
+                }
             }
         }
-        // TODO error catch
     }
 
-    fun convert(amount: Double) : Double {
+    fun convert(amount: Double): Double {
         val outputAmount = amount * exchangeRate
         Log.d(TAG, "Converted $amount to $outputAmount, using rate of $exchangeRate")
         return outputAmount
     }
-
-    // TODO cancel job after response timeout
-
 }

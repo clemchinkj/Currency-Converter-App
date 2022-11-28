@@ -12,6 +12,7 @@ import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.deccovers.currencyconverterapp.R
 import com.deccovers.currencyconverterapp.databinding.ActivityMainBinding
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.awaitClose
@@ -26,6 +27,8 @@ class MainActivity : AppCompatActivity() {
     private val binding get() = _binding!!
 
     private val mainActivityViewModel: MainActivityViewModel by viewModels()
+
+    private var spinnerLastStableValues = intArrayOf(0,0)
 
     @OptIn(FlowPreview::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -92,9 +95,25 @@ class MainActivity : AppCompatActivity() {
                         } else {
                             binding.tvResult.text = ""
                         }
+
+                        spinnerLastStableValues[0] = binding.spinnerInputCurrency.selectedItemPosition
+                        spinnerLastStableValues[1] = binding.spinnerOutputCurrency.selectedItemPosition
+                        Log.d(TAG, "Updated spinner positions to ${spinnerLastStableValues[0]} and ${spinnerLastStableValues[1]}")
                     }
 
                     is MainActivityViewModel.ExchangeUiState.Error -> {
+                        binding.progressBar.visibility = View.INVISIBLE
+                        binding.spinnerInputCurrency.isEnabled = true
+                        binding.spinnerOutputCurrency.isEnabled = true
+                        binding.etInputAmount.isEnabled = true
+
+                        binding.tvResult.text = ""
+                        binding.spinnerInputCurrency.setSelection(spinnerLastStableValues[0])
+                        binding.spinnerOutputCurrency.setSelection(spinnerLastStableValues[1])
+
+                        Log.d(TAG, "Reverted spinner positions to ${spinnerLastStableValues[0]} and ${spinnerLastStableValues[1]}")
+                        Snackbar.make(binding.root, "Check network connection", Snackbar.LENGTH_LONG).show()
+
                         Log.e(TAG, "ExchangeUiState.Error")
                     }
 
@@ -144,7 +163,4 @@ class MainActivity : AppCompatActivity() {
     }
 
     // TODO separate layout for landscape orientation
-    // TODO offline usage
-    // TODO network timeout handling
-    // TODO stateflow error handling
 }
